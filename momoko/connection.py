@@ -414,7 +414,7 @@ class Pool(object):
         See :py:meth:`momoko.Connection.mogrify` for documentation about the
         parameters.
         """
-        return self._operate(Connection.mogrify, args, kwargs, async=False)
+        return self._operate(Connection.mogrify, args, kwargs, async_param=False)
 
     def register_hstore(self, *args, **kwargs):
         """
@@ -451,7 +451,7 @@ class Pool(object):
         self.conns.empty()
         self.closed = True
 
-    def _operate(self, method, args=(), kwargs=None, async=True, keep=False, connection=None):
+    def _operate(self, method, args=(), kwargs=None, async_param=True, keep=False, connection=None):
         kwargs = kwargs or {}
         future = Future()
 
@@ -473,7 +473,7 @@ class Pool(object):
                 log.debug("Method failed synchronously")
                 return self._retry(retry, when_available, conn, keep, future)
 
-            if not async:
+            if not async_param:
                 future.set_result(future_or_result)
                 if not keep:
                     self.putconn(conn)
