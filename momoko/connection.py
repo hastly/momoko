@@ -28,7 +28,7 @@ from psycopg2.extras import register_json as _psy_register_json
 from psycopg2.extensions import POLL_OK, POLL_READ, POLL_WRITE
 
 from tornado.ioloop import IOLoop
-from tornado.concurrent import chain_future, Future
+from tornado.concurrent import chain_future, Future, future_set_exc_info
 
 from .exceptions import PoolError, PartiallyConnectedError
 
@@ -509,7 +509,7 @@ class Pool(object):
             else:
                 future.set_exception(self._no_conn_available_error)
         else:
-            future.set_exc_info(sys.exc_info())
+            future_set_exc_info(future, sys.exc_info())
         if not keep:
             self.putconn(conn)
         return
@@ -718,7 +718,7 @@ class Connection(object):
             state = self.connection.poll()
         except (psycopg2.Warning, psycopg2.Error):
             self.ioloop.remove_handler(self.fileno)
-            future.set_exc_info(sys.exc_info())
+            future_set_exc_info(future, sys.exc_info())
         else:
             try:
                 if state == POLL_OK:
